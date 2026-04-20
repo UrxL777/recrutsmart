@@ -1,0 +1,16 @@
+# Environnement Python
+ia/venv/
+ia/__pycache__/
+ia/*.pyc
+
+# Variables d'environnement — NE JAMAIS envoyer sur GitHub
+ia/.env
+
+# Dossier de test — à supprimer avant production
+tests/cvs/
+
+# CV des candidats — données personnelles
+uploads/
+
+# Cache
+*.log
