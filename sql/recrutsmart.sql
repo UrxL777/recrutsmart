@@ -87,13 +87,32 @@ CREATE TABLE IF NOT EXISTS candidatures (
 --     Remplie par le microservice Python après chaque upload CV
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS cv_analyses (
-    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    candidat_id     INT UNSIGNED NOT NULL UNIQUE,
-    competences     TEXT         DEFAULT NULL,
-    experience      TEXT         DEFAULT NULL,
-    formation       TEXT         DEFAULT NULL,
-    resume          TEXT         DEFAULT NULL,
-    analyse_le      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    candidat_id         INT UNSIGNED NOT NULL UNIQUE,
+    competences         TEXT         DEFAULT NULL,
+    experience          TEXT         DEFAULT NULL,
+    formation           TEXT         DEFAULT NULL,
+    resume              TEXT         DEFAULT NULL,
+    langues             TEXT         DEFAULT NULL COMMENT 'Toutes les langues parlées extraites du CV',
+    localisation        TEXT         DEFAULT NULL COMMENT 'Ville, pays, mobilité extraits du CV',
+    disponibilite       VARCHAR(100) DEFAULT NULL COMMENT 'Disponibilité (immédiate, préavis...)',
+    situation_familiale VARCHAR(100) DEFAULT NULL COMMENT 'Situation familiale (marié, célibataire, enfants...)',
+    annees_experience   INT          DEFAULT 0    COMMENT 'Nombre d années d expérience extrait du CV',
+    surplus_info        LONGTEXT     DEFAULT NULL COMMENT 'Toutes les autres infos : loisirs, pays visités, permis, qualités, références, certifications...',
+    analyse_le          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidat_id) REFERENCES candidats(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+--  5b. CV_TEXTE_BRUT
+--      Texte intégral extrait du CV (séparé pour ne pas alourdir cv_analyses)
+--      Utilisé par le LLM pour chercher n'importe quelle information
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS cv_texte_brut (
+    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    candidat_id   INT UNSIGNED NOT NULL UNIQUE,
+    texte_complet LONGTEXT     DEFAULT NULL COMMENT 'Texte brut intégral du CV extrait par Python',
+    analyse_le    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (candidat_id) REFERENCES candidats(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -4,7 +4,6 @@
 // Appelé en AJAX depuis les dashboards
 
 require_once __DIR__ . '/../config/db.php';
-requireLogin();
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
@@ -13,19 +12,38 @@ header('Cache-Control: no-store');
 define('IA_BASE_URL', 'http://127.0.0.1:5000');
 define('IA_SECRET',   'CDG_music_calmez_vous_orrh'); // Doit correspondre au .env
 
+// ── Récupérer l'action demandée ───────────────────────────────────
+$action = clean($_POST['action'] ?? $_GET['action'] ?? '');
+
+if (!in_array($action, ['analyser', 'agent', 'sante'])) {
+    http_response_code(400);
+    echo json_encode(['erreur' => 'Action invalide.']);
+    exit;
+}
+
+// ── Health check — pas besoin de session ni CSRF ──────────────────
+if ($action === 'sante') {
+    $ch = curl_init(IA_BASE_URL . '/sante');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 3,
+        CURLOPT_CONNECTTIMEOUT => 2,
+        CURLOPT_HTTPHEADER     => ['X-API-Key: ' . IA_SECRET],
+    ]);
+    $rep  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    echo ($code === 200 && $rep) ? $rep : json_encode(['statut' => 'hors-ligne']);
+    exit;
+}
+
+// ── Pour toutes les autres actions : session obligatoire ──────────
+requireLogin();
+
 // ── Vérification CSRF ─────────────────────────────────────────────
 if (!verifyCsrf($_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
     http_response_code(403);
     echo json_encode(['erreur' => 'Requête invalide.']);
-    exit;
-}
-
-// ── Récupérer l'action demandée ───────────────────────────────────
-$action = clean($_POST['action'] ?? '');
-
-if (!in_array($action, ['analyser', 'agent'])) {
-    http_response_code(400);
-    echo json_encode(['erreur' => 'Action invalide.']);
     exit;
 }
 
@@ -37,7 +55,7 @@ if ($action === 'analyser') {
         echo json_encode(['erreur' => 'Non autorisé.']);
         exit;
     }
-    $requete = clean($_POST['requete'] ?? '');
+    $requete = trim($_POST['requete'] ?? '');
     if (strlen($requete) < 3) {
         http_response_code(422);
         echo json_encode(['erreur' => 'Requête trop courte.']);
@@ -50,7 +68,7 @@ if ($action === 'analyser') {
     $endpoint = '/analyser';
 
 } elseif ($action === 'agent') {
-    $message = clean($_POST['message'] ?? '');
+    $message = trim($_POST['message'] ?? '');
     if (!$message) {
         http_response_code(422);
         echo json_encode(['erreur' => 'Message vide.']);
@@ -60,7 +78,7 @@ if ($action === 'analyser') {
         'user_id'   => (int)$_SESSION['user_id'],
         'user_role' => $_SESSION['role'],
         'message'   => $message,
-        'contexte'  => clean($_POST['contexte'] ?? '')
+        'contexte'  => trim($_POST['contexte'] ?? '')
     ]);
     $endpoint = '/agent';
 }
@@ -71,7 +89,7 @@ curl_setopt_array($ch, [
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 60,
+    CURLOPT_TIMEOUT        => 300,
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
         'X-API-Key: ' . IA_SECRET,

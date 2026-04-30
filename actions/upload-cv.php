@@ -2,6 +2,7 @@
 // actions/upload-cv.php
 // Traitement de l'upload du CV depuis dashboard-candidat.php
 // Formats acceptés : PDF, DOCX, DOC, JPG, JPEG, PNG — max 5 Mo
+// Après upload : appel automatique au microservice IA pour analyse
 
 require_once __DIR__ . '/../config/db.php';
 requireLogin();
@@ -39,13 +40,13 @@ if ($fichier['error'] !== UPLOAD_ERR_OK) {
 }
 
 // ── Vérification taille : max 5 Mo ──────────────────────────────
-$maxSize = 5 * 1024 * 1024; // 5 Mo
+$maxSize = 5 * 1024 * 1024;
 if ($fichier['size'] > $maxSize) {
     setFlash('danger', 'Le fichier est trop volumineux (max 5 Mo).');
     header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
 }
 
-// ── Vérification type MIME réel (pas seulement l'extension) ─────
+// ── Vérification type MIME réel ──────────────────────────────────
 $mimeAutorise = [
     'application/pdf',
     'application/msword',
@@ -89,8 +90,7 @@ if ($ancien && $ancien['cv_fichier']) {
 }
 
 // ── Nom de fichier sécurisé et unique ───────────────────────────
-// Format : cv_[id_candidat]_[timestamp].[ext]
-$nomFichier = 'cv_' . $_SESSION['user_id'] . '_' . time() . '.' . $ext;
+$nomFichier  = 'cv_' . $_SESSION['user_id'] . '_' . time() . '.' . $ext;
 $destination = $dossierUpload . $nomFichier;
 
 // ── Déplacement du fichier ───────────────────────────────────────
@@ -107,6 +107,46 @@ $st = $pdo->prepare('
 ');
 $st->execute([$nomFichier, $mimeReel, $_SESSION['user_id']]);
 
+// ── Appel automatique au microservice IA pour analyser le CV ────
+// L'analyse se fait en arrière-plan — on n'attend pas la réponse
+// pour ne pas bloquer la redirection du candidat
+_appeler_microservice_analyse((int)$_SESSION['user_id'], $nomFichier, $mimeReel);
+
 // ── Succès ───────────────────────────────────────────────────────
-setFlash('success', 'Votre CV a été enregistré avec succès !✅  Vous pouvez le remplacer à tout moment en téléchargeant une nouvelle version.');
+setFlash('success', 'Votre CV a été enregistré avec succès ! ✅ L\'analyse IA est en cours, vos informations seront disponibles dans quelques instants.');
 header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+
+
+// ================================================================
+//  Fonction : appel au microservice IA (non bloquant)
+// ================================================================
+function _appeler_microservice_analyse(int $candidat_id, string $cv_fichier, string $cv_mime): void
+{
+    $ia_url    = 'http://127.0.0.1:5000/analyser-cv';
+    $ia_secret = 'CDG_music_calmez_vous_orrh'; // Doit correspondre au .env
+
+    $payload = json_encode([
+        'candidat_id' => $candidat_id,
+        'cv_fichier'  => $cv_fichier,
+        'cv_mime'     => $cv_mime,
+    ]);
+
+    $ch = curl_init($ia_url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'X-API-Key: ' . $ia_secret,
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        // Timeout court : on n'attend pas la fin de l'analyse
+        // Le microservice continue en arrière-plan
+        CURLOPT_TIMEOUT        => 5,
+        CURLOPT_CONNECTTIMEOUT => 3,
+    ]);
+
+    // On ignore la réponse — l'analyse se fait en arrière-plan
+    curl_exec($ch);
+    curl_close($ch);
+}

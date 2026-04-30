@@ -1,0 +1,23 @@
+# ── Masquer les erreurs PHP/Apache à l'écran ─────────────────────
+php_flag  display_errors        off
+php_flag  display_startup_errors off
+php_value error_reporting       32767
+php_flag  log_errors            on
+
+# ── Page d'erreur personnalisée (pas de message technique) ────────
+ErrorDocument 400 /recrutsmart/index.php
+ErrorDocument 403 /recrutsmart/index.php
+ErrorDocument 404 /recrutsmart/index.php
+ErrorDocument 500 /recrutsmart/index.php
+
+# ── Bloquer l'accès direct aux fichiers sensibles ─────────────────
+<FilesMatch "\.(env|log|sql|py|pyc|json|md|txt|ini|cfg)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# ── Bloquer l'accès aux dossiers cachés ───────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(\.git|\.env|ia/venv|ia/__pycache__) - [F,L]
+</IfModule>

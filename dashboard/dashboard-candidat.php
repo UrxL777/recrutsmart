@@ -52,8 +52,10 @@ if (isset($_GET['msg'])) {
 }
 
 $nonLus = array_filter($messages, fn($m) => !$m['lu']);
-$csrf   = csrfToken();
-$flash  = getFlash();
+$csrf     = csrfToken();
+$flash    = getFlash();
+$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on' ? 'https' : 'http')
+          . '://' . $_SERVER['HTTP_HOST'] . '/recrutsmart';
 
 function statutCouleur(string $s): string {
     return match($s) {
@@ -76,7 +78,7 @@ function tempsRelatif(string $date): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mon Espace candidat — RecrutSmart</title>
+<title>Mon Espace — RecrutSmart</title>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0f18;color:#e2e8f0;
@@ -206,7 +208,34 @@ function tempsRelatif(string $date): string {
     border-radius:8px;padding:.5rem 1rem;font-size:.88rem;color:#00c9a7;
     font-weight:600;margin-top:1rem}
 
-  @media(max-width:900px){.main{grid-template-columns:1fr;grid-template-rows:auto}}
+  /* ── RESPONSIVE TABLETTE ── */
+  @media(max-width:900px){
+    .main{grid-template-columns:1fr;grid-template-rows:auto}
+    .sidebar-ia{height:auto;min-height:300px;position:static}
+    .ia-messages{max-height:200px}
+  }
+
+  /* ── RESPONSIVE MOBILE ── */
+  @media(max-width:680px){
+    .main{grid-template-columns:1fr;padding:.7rem;gap:.8rem}
+    .sidebar-ia{height:auto;min-height:280px;position:static;order:3}
+    .ia-messages{max-height:170px}
+    .center-col{order:1}
+    .right-col{order:2}
+    .header{padding:.65rem .9rem;flex-wrap:wrap;gap:.5rem}
+    .welcome-text{font-size:.85rem}
+    .section-card{padding:1rem}
+    .upload-zone{padding:1.5rem .8rem}
+    .upload-icon{font-size:2rem}
+    .cand-item{flex-direction:column;gap:.3rem;align-items:flex-start}
+    .msg-item{padding:.6rem .4rem}
+  }
+
+  @media(max-width:400px){
+    .main{padding:.5rem}
+    .btn-cv{font-size:.88rem;padding:.65rem}
+    .ia-input{font-size:.78rem}
+  }
 </style>
 </head>
 <body>
@@ -245,7 +274,7 @@ function tempsRelatif(string $date): string {
   <div class="sidebar-ia">
     <div class="ia-header">
       <div class="ia-dot"></div>
-      <span class="ia-title">Agent IA</span>
+      <span class="ia-title">RecrutSmart IA</span>
     </div>
     <div class="ia-messages" id="ia-messages">
       <!-- Message d'accueil -->
@@ -284,6 +313,12 @@ function tempsRelatif(string $date): string {
     <div class="section-card">
       <div class="section-title">Mon CV</div>
 
+      <!-- Format CV recommandé -->
+      <div style="background:rgba(0,201,167,.06);border:1px solid rgba(0,201,167,.25);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.8rem;line-height:1.7;color:#94a3b8">
+        <div style="color:#00c9a7;font-weight:700;margin-bottom:.4rem">📋 Format de CV recommandé</div>
+        Remplissez votre CV avec ces rubriques obligatoires : <strong style="color:#e2e8f0">Compétences/Qualités</strong> (ex: rigoureux, PHP, anglais), <strong style="color:#e2e8f0">Formation/Diplôme</strong> (ex: Master en Logistique), <strong style="color:#e2e8f0">Langue</strong> (arabe, mandarin…), <strong style="color:#e2e8f0">Expérience</strong> (nombre d'années), et <strong style="color:#e2e8f0">Localisation</strong> (ville ou quartier).
+      </div>
+
       <?php if ($candidat['cv_fichier']): ?>
         <div class="cv-actuel">
           <div class="cv-actuel-icon">📄</div>
@@ -293,7 +328,7 @@ function tempsRelatif(string $date): string {
               Mis à jour le <?= date('d/m/Y à H:i', strtotime($candidat['cv_date'])) ?>
             </div>
           </div>
-          <a href="/recrutsmart/uploads/<?= clean($candidat['cv_fichier']) ?>"
+          <a href="<?= $base_url ?>/uploads/<?= clean($candidat['cv_fichier']) ?>"
             target="_blank" style="color:#00c9a7;font-size:.82rem;text-decoration:none;font-weight:600;">
             Voir
           </a>
@@ -443,7 +478,7 @@ function majLabel(input) {
   }
 }
 
-// Agent IA — chatbox (interface prête, branchement Python à la semaine 4)
+// RecrutSmart IA — chatbox (interface prête, branchement Python à la semaine 4)
 const iaInput = document.getElementById('ia-input');
 const iaSend  = document.getElementById('ia-send');
 const iaMsgs  = document.getElementById('ia-messages');
@@ -465,6 +500,24 @@ function escTexte(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// Nettoie une réponse IA avant affichage — supprime code, JSON brut, erreurs techniques
+function nettoyerReponseIA(txt) {
+  if (!txt) return '';
+  const t = txt.trim();
+  if ((t.startsWith('{') && t.endsWith('}')) || (t.startsWith('[') && t.endsWith(']'))) {
+    return 'Je rencontre une difficulté. Pouvez-vous reformuler votre question ?';
+  }
+  txt = txt.replace(/```[\s\S]*?```/g, '');
+  txt = txt.replace(/`[^`]*`/g, '');
+  txt = txt.replace(/<[^>]+>/g, '');
+  const lignes = txt.split('\n').filter(l => {
+    const ll = l.toLowerCase();
+    return !['traceback', 'error:', 'exception:', 'warning:', 'undefined', 'at line', 'stack trace', 'php '].some(m => ll.includes(m));
+  });
+  txt = lignes.join('\n').trim();
+  return txt || 'Je rencontre une difficulté. Pouvez-vous reformuler votre question ?';
 }
 
 function ajouterBulleUser(txt) {
@@ -500,10 +553,10 @@ async function envoyerIA() {
     if (data.erreur) {
       ajouterBulleIA('⚠️ ' + escTexte(data.erreur));
     } else {
-      ajouterBulleIA(escTexte(data.reponse));
+      ajouterBulleIA(escTexte(nettoyerReponseIA(data.reponse)));
     }
   } catch {
-    ajouterBulleIA('Le service IA est momentanément indisponible.');
+    ajouterBulleIA('RecrutSmart est momentanément indisponible, veuillez réessayer.');
   }
 }
 

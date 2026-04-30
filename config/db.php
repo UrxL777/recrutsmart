@@ -1,6 +1,12 @@
 <?php
 // config/db.php — Connexion PDO + toutes les fonctions du projet
 
+// ── Masquer toutes les erreurs PHP à l'écran ─────────────────────
+// Les erreurs sont loguées côté serveur, jamais affichées à l'utilisateur
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(E_ALL);
+ini_set('log_errors', '1');
 if (session_status() === PHP_SESSION_NONE) {
     // Configuration sécurisée de la session
     ini_set('session.cookie_httponly', '1');   // Cookie inaccessible au JS
