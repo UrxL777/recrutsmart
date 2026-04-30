@@ -497,7 +497,7 @@ function construireCarte(r, niveau){
   // Correction chemin CV — BASE_URL fonctionne local ET hébergement
   const cvUrl = r.cv_fichier ? BASE_URL + '/uploads/' + r.cv_fichier : '';
   const scoreLabel = niveau === 'exact' ? `${r.score}% — Exact` : (niveau === 'partiel' ? `${r.score}% — Suggestion` : `${r.score}% — Similaire`);
-  const resume = r.resume_ia ? escTexte(nettoyerReponseIA(r.resume_ia)) : '';
+  const resume = r.resume_ia ? escTexte(r.resume_ia) : '';
 
   return `<div class="cand-card" style="margin-bottom:.7rem">
     <div class="cand-avatar">${ini}</div>

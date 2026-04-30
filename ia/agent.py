@@ -373,37 +373,46 @@ def _nettoyer_message(texte: str) -> str:
 def _nettoyer_reponse_agent(reponse: str) -> str:
     """
     Nettoie la réponse de l'agent avant affichage :
-    - Supprime les blocs de code markdown (```...```)
+    - Supprime le markdown (**, *, #, -)
+    - Supprime les blocs de code
     - Supprime les balises HTML
-    - Supprime les JSON bruts qui auraient pu s'échapper
-    - Supprime les traces d'erreur Python/PHP
-    - Supprime les clés API ou tokens qui auraient pu fuiter
+    - Supprime les JSON bruts
+    - Supprime les traces d'erreur techniques
     """
     # Supprimer les blocs de code markdown ```...```
     reponse = re.sub(r'```[\s\S]*?```', '', reponse)
     # Supprimer les inline code `...`
     reponse = re.sub(r'`[^`]*`', '', reponse)
+    # Supprimer le gras **texte** et __texte__
+    reponse = re.sub(r'\*\*(.+?)\*\*', r'\1', reponse)
+    reponse = re.sub(r'__(.+?)__', r'\1', reponse)
+    # Supprimer l'italique *texte* et _texte_
+    reponse = re.sub(r'\*(.+?)\*', r'\1', reponse)
+    reponse = re.sub(r'_(.+?)_', r'\1', reponse)
+    # Supprimer les titres markdown # ## ###
+    reponse = re.sub(r'^#{1,6}\s+', '', reponse, flags=re.MULTILINE)
+    # Supprimer les puces markdown - et *
+    reponse = re.sub(r'^\s*[-\*]\s+', '', reponse, flags=re.MULTILINE)
     # Supprimer les balises HTML
     reponse = re.sub(r'<[^>]+>', '', reponse)
     # Supprimer les JSON bruts (commence par { ou [)
-    reponse = re.sub(r'^\s*[\{\[][\s\S]*[\}\]]\s*$', '', reponse.strip())
-    # Supprimer les lignes qui ressemblent à des erreurs techniques
+    if reponse.strip().startswith('{') or reponse.strip().startswith('['):
+        return "Je rencontre une difficulté. Pouvez-vous reformuler votre question ?"
+    # Supprimer les lignes d'erreur technique
     lignes_propres = []
     mots_erreur = [
         'traceback', 'error:', 'exception:', 'syntaxerror',
         'typeerror', 'valueerror', 'keyerror', 'indexerror',
         'attributeerror', 'nameerror', 'importerror',
-        'file "', 'line ', 'at line', 'stack trace',
-        'undefined', 'null', 'none', 'nan',
+        'file "', 'stack trace',
         'php warning', 'php error', 'php notice',
-        'fatal error', 'parse error', 'warning:',
+        'fatal error', 'parse error',
     ]
     for ligne in reponse.splitlines():
         ligne_lower = ligne.lower().strip()
         if not any(m in ligne_lower for m in mots_erreur):
             lignes_propres.append(ligne)
     reponse = '\n'.join(lignes_propres).strip()
-    # Si après nettoyage la réponse est vide ou trop courte → message générique
     if len(reponse) < 5:
         reponse = "Je rencontre une difficulté. Pouvez-vous reformuler votre question ?"
     return reponse
@@ -432,8 +441,10 @@ def _masquer_identite_modele(reponse: str) -> str:
     ]
 
     mots_identite = [
-        'je suis', 'mon nom est', "je m'appelle",
         'je suis un assistant', 'je suis une ia',
+        'je suis un modèle', 'je suis basé',
+        'je suis alimenté', 'je suis développé',
+        'je suis entraîné', 'mon nom est', "je m'appelle",
     ]
 
     reponse_lower = reponse.lower()
