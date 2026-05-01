@@ -112,9 +112,21 @@ try {
     $pdo->commit();
 
     // ── Message flash de succès ──────────────────────────────────
-    $nomCand = $pdo->prepare('SELECT prenom, nom FROM candidats WHERE id=?');
+    $nomCand = $pdo->prepare('SELECT prenom, nom, email FROM candidats WHERE id=?');
     $nomCand->execute([$candidatId]); $nomCand = $nomCand->fetch();
-    $nomAffiche = $nomCand ? clean($nomCand['prenom'].' '.$nomCand['nom']) : 'le candidat';
+    $nomAffiche  = $nomCand ? clean($nomCand['prenom'].' '.$nomCand['nom']) : 'le candidat';
+    $emailCandid = $nomCand['email'] ?? '';
+
+    // ── Envoi email réel si adresse valide ───────────────────────
+    if ($emailCandid && filter_var($emailCandid, FILTER_VALIDATE_EMAIL)) {
+        _envoyer_email_candidat(
+            $emailCandid,
+            $nomAffiche,
+            $sujet,
+            $corpsComplet,
+            $recruteur
+        );
+    }
 
     setFlash('success', "✅ Message envoyé à $nomAffiche avec succès !");
 
@@ -124,3 +136,43 @@ try {
 }
 
 header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+
+
+// ================================================================
+//  Fonction : envoi email via Gmail SMTP (PHPMailer)
+// ================================================================
+function _envoyer_email_candidat(
+    string $emailDest,
+    string $nomDest,
+    string $sujet,
+    string $corps,
+    array  $recruteur
+): void {
+    $autoload = __DIR__ . '/../vendor/autoload.php';
+    if (!file_exists($autoload)) return;
+    require_once $autoload;
+
+    try {
+        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = SMTP_USER;
+        $mail->Password   = SMTP_PASS;
+        $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+        $mail->CharSet    = 'UTF-8';
+
+        $mail->setFrom(SMTP_USER, $recruteur['entreprise'] . ' via RecrutSmart');
+        $mail->addReplyTo($recruteur['email'], $recruteur['prenom'].' '.$recruteur['nom']);
+        $mail->addAddress($emailDest, $nomDest);
+
+        $mail->Subject = $sujet;
+        $mail->Body    = $corps;
+
+        $mail->send();
+    } catch (\Exception $e) {
+        // Échec silencieux — le message est déjà sauvegardé en base
+        error_log('[RecrutSmart] Erreur envoi email : ' . $e->getMessage());
+    }
+}
