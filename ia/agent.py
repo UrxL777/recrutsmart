@@ -217,9 +217,11 @@ async def valider_requete(requete: str) -> tuple[bool, str]:
         return False, 'LLM non configuré'
 
     prompt = f"""Une requête de recrutement est VALIDE si elle contient au moins un critère
-permettant de chercher un profil : métier, compétence, domaine, formation,
-ou tout autre critère personnel précis (langue, localisation, situation familiale...).
-Elle est INVALIDE uniquement si elle est totalement vide de sens.
+permettant de chercher un profil parmi des candidats.
+Elle peut contenir n'importe quel type de critère : métier, compétence, formation,
+langue, localisation, situation familiale, traits de personnalité, loisirs,
+valeurs, préférences, religion, nationalité, ou toute autre caractéristique.
+Elle est INVALIDE UNIQUEMENT si elle est totalement vide de sens ou incompréhensible.
 
 Requête : "{requete}"
 

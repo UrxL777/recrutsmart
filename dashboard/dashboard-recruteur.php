@@ -44,6 +44,18 @@ $nbAvecCV    = $pdo->query('SELECT COUNT(*) FROM candidats WHERE cv_fichier IS N
 $nbMessages  = $pdo->prepare('SELECT COUNT(*) FROM messages WHERE recruteur_id=?');
 $nbMessages->execute([$id]); $nbMessages = $nbMessages->fetchColumn();
 
+// Messages envoyés par ce recruteur
+$stMsgEnvoyes = $pdo->prepare('
+    SELECT m.id, m.sujet, m.corps, m.heure_rdv, m.cree_le, m.lu,
+           c.nom, c.prenom, c.email
+    FROM messages m
+    JOIN candidats c ON c.id = m.candidat_id
+    WHERE m.recruteur_id = ?
+    ORDER BY m.cree_le DESC
+    LIMIT 20
+');
+$stMsgEnvoyes->execute([$id]); $messagesEnvoyes = $stMsgEnvoyes->fetchAll();
+
 // URL de base pour les CV — fonctionne en local ET en hébergement
 $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on' ? 'https' : 'http')
           . '://' . $_SERVER['HTTP_HOST'] . '/recrutsmart';
@@ -333,6 +345,41 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
         </div>
       <?php endif; ?>
     </div>
+
+    <!-- Messages envoyés -->
+    <?php if ($messagesEnvoyes): ?>
+    <div style="margin-top:1rem">
+      <div style="color:#e2e8f0;font-weight:700;font-size:.85rem;margin-bottom:.5rem;padding:.35rem 0;border-bottom:1px solid #252a40">
+        ✉️ Messages envoyés (<?= count($messagesEnvoyes) ?>)
+      </div>
+      <?php foreach ($messagesEnvoyes as $m): ?>
+        <div style="background:#161929;border:1px solid #252a40;border-radius:10px;padding:.8rem 1rem;margin-bottom:.6rem;cursor:pointer;transition:border-color .2s"
+             onclick="this.querySelector('.msg-detail').style.display = this.querySelector('.msg-detail').style.display==='none' ? 'block' : 'none'"
+             onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#252a40'">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:600;font-size:.88rem;color:#e2e8f0"><?= clean($m['prenom'].' '.$m['nom']) ?></div>
+              <div style="font-size:.78rem;color:#7a859a;margin-top:.1rem"><?= clean($m['sujet']) ?></div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:.72rem;color:#7a859a"><?= date('d/m/Y', strtotime($m['cree_le'])) ?></div>
+              <?php if ($m['lu']): ?>
+                <span style="font-size:.7rem;color:#00c9a7">✓ Lu</span>
+              <?php else: ?>
+                <span style="font-size:.7rem;color:#eab308">En attente</span>
+              <?php endif; ?>
+            </div>
+          </div>
+          <div class="msg-detail" style="display:none;margin-top:.7rem;padding-top:.7rem;border-top:1px solid #252a40">
+            <div style="font-size:.82rem;color:#94a3b8;white-space:pre-wrap;line-height:1.6"><?= clean($m['corps']) ?></div>
+            <?php if ($m['heure_rdv']): ?>
+              <div style="margin-top:.5rem;font-size:.78rem;color:#00c9a7">📅 RDV : <?= date('d/m/Y à H:i', strtotime($m['heure_rdv'])) ?></div>
+            <?php endif; ?>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
   </div>
 </div>
