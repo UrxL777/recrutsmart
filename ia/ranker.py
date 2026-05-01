@@ -102,7 +102,7 @@ async def classer_candidats(requete: str, candidats: list) -> dict:
             score      = evaluation.get("score", 0)
 
             # ── Règle 1 : seuil minimum d'affichage ──────────────
-            if score >= 40:
+            if score >= 25:
                 resume = await generer_resume_ia(requete, candidat, evaluation)
                 resultats.append({
                     'candidat_id':          candidat['id'],
