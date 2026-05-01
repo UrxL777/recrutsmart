@@ -200,6 +200,15 @@ RÈGLES GÉNÉRALES
 - Chercher dans texte_complet avant de conclure qu'une information est absente.
 - Être factuel et précis dans la justification.
 - Aucun commentaire avant ou après le JSON.
+
+INFÉRENCE SÉMANTIQUE — RÈGLE IMPORTANTE :
+- Tu dois raisonner comme un humain intelligent et faire des inférences logiques.
+- "n'aime pas l'indiscipline" = "aime la discipline" → si le CV mentionne "aime la discipline", le critère est satisfait.
+- "ne mange pas de porc" peut correspondre à une religion (Islam, Judaïsme) mentionnée dans le CV.
+- "travailleur" peut correspondre à "rigoureux", "sérieux", "consciencieux" dans le CV.
+- "dynamique" peut correspondre à "énergique", "proactif", "motivé" dans le CV.
+- En général : cherche l'équivalent sémantique, le synonyme, l'antonyme logique ou l'implication directe du critère demandé dans le profil.
+- Si le critère est satisfait par inférence logique → score positif, pas 0.
 """.strip()
 
 
