@@ -220,6 +220,7 @@ Texte intégral du CV :
             SystemMessage(content=GROQ_SYSTEM_PROMPT),
             HumanMessage(content=f'REQUÊTE : "{requete}"\n\nPROFIL CANDIDAT :\n{profil}')
         ])
+        print(f"[DEBUG] Profil envoyé au LLM (500 premiers chars) : {profil[:500]}")
         contenu = response.content.strip().replace('```json','').replace('```','').strip()
         data = json.loads(contenu)
         return {
