@@ -218,9 +218,16 @@ Texte intégral du CV :
     try:
         response = await llm.ainvoke([
             SystemMessage(content=GROQ_SYSTEM_PROMPT),
-            HumanMessage(content=f'REQUÊTE : "{requete}"\n\nPROFIL CANDIDAT :\n{profil}')
+            HumanMessage(content=f'''REQUÊTE : "{requete}"
+
+RAPPEL IMPORTANT : Fais des inférences sémantiques.
+Exemple : si la requête dit "n'aime pas l'indiscipline" et que le profil dit "aime la discipline" → c'est une correspondance directe, score élevé.
+Exemple : si la requête dit "a fréquenté l'université X" et que la formation mentionne cette université → correspondance parfaite.
+Cherche dans TOUTES les sections du profil, notamment "Autres informations" et "Texte intégral du CV".
+
+PROFIL CANDIDAT :
+{profil}''')
         ])
-        print(f"[DEBUG] Profil envoyé au LLM (500 premiers chars) : {profil[:500]}")
         contenu = response.content.strip().replace('```json','').replace('```','').strip()
         data = json.loads(contenu)
         return {
