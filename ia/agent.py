@@ -154,7 +154,8 @@ Retourne UNIQUEMENT la requête reformulée, sans explication ni commentaire."""
         return requete
 
 
-async def valider_requete(requete: str) -> tuple[bool, str]:    """
+async def valider_requete(requete: str) -> tuple[bool, str]:
+    """
     Vérifie que la requête contient au moins un critère de recherche.
     Retourne (valide, raison).
     """
