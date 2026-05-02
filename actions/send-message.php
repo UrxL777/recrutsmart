@@ -8,13 +8,13 @@ requireLogin();
 
 // Seul un recruteur peut envoyer un message
 if ($_SESSION['role'] !== 'recruteur') {
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // Vérification CSRF
 if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
     setFlash('danger', 'Requête invalide, veuillez réessayer.');
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 
 $recruteurId = (int)$_SESSION['user_id'];
@@ -28,15 +28,15 @@ $rdvHeure    = clean($_POST['heure_rdv_heure'] ?? '');
 // ── Validations ──────────────────────────────────────────────────
 if (!$candidatId) {
     setFlash('danger', 'Candidat introuvable.');
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 if (!$sujet) {
     setFlash('danger', 'L\'objet du message est requis.');
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 if (strlen($corps) < 10) {
     setFlash('danger', 'Le message est trop court.');
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 
 // ── Vérifier que le candidat existe ─────────────────────────────
@@ -44,7 +44,7 @@ $stCheck = $pdo->prepare('SELECT id FROM candidats WHERE id=? AND actif=1');
 $stCheck->execute([$candidatId]);
 if (!$stCheck->fetch()) {
     setFlash('danger', 'Candidat introuvable ou inactif.');
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 
 // ── Construire la date/heure du RDV ─────────────────────────────
@@ -135,7 +135,7 @@ try {
     setFlash('danger', 'Erreur lors de l\'envoi du message. Veuillez réessayer.');
 }
 
-header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+header('Location: /dashboard/dashboard-recruteur.php'); exit;
 
 
 // ================================================================

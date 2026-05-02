@@ -9,19 +9,19 @@ requireLogin();
 
 // Seul un candidat peut uploader son CV
 if ($_SESSION['role'] !== 'candidat') {
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 
 // Vérification CSRF
 if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
     setFlash('danger', 'Requête invalide, veuillez réessayer.');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // Vérifier qu'un fichier a bien été envoyé
 if (empty($_FILES['cv']) || $_FILES['cv']['error'] === UPLOAD_ERR_NO_FILE) {
     setFlash('danger', 'Aucun fichier sélectionné.');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 $fichier = $_FILES['cv'];
@@ -36,14 +36,14 @@ if ($fichier['error'] !== UPLOAD_ERR_OK) {
         UPLOAD_ERR_CANT_WRITE => 'Impossible d\'écrire le fichier.',
     ];
     setFlash('danger', $erreurs[$fichier['error']] ?? 'Erreur lors de l\'upload.');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // ── Vérification taille : max 5 Mo ──────────────────────────────
 $maxSize = 5 * 1024 * 1024;
 if ($fichier['size'] > $maxSize) {
     setFlash('danger', 'Le fichier est trop volumineux (max 5 Mo).');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // ── Vérification type MIME réel ──────────────────────────────────
@@ -60,7 +60,7 @@ $mimeReel = $finfo->file($fichier['tmp_name']);
 
 if (!in_array($mimeReel, $mimeAutorise)) {
     setFlash('danger', 'Format non autorisé. Utilisez PDF, DOCX, JPG ou PNG.');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // ── Vérification extension ───────────────────────────────────────
@@ -69,7 +69,7 @@ $ext          = strtolower(pathinfo($fichier['name'], PATHINFO_EXTENSION));
 
 if (!in_array($ext, $extAutorisee)) {
     setFlash('danger', 'Extension non autorisée. Utilisez PDF, DOCX, JPG ou PNG.');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // ── Dossier de destination ───────────────────────────────────────
@@ -96,7 +96,7 @@ $destination = $dossierUpload . $nomFichier;
 // ── Déplacement du fichier ───────────────────────────────────────
 if (!move_uploaded_file($fichier['tmp_name'], $destination)) {
     setFlash('danger', 'Erreur lors de l\'enregistrement du fichier. Réessayez.');
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 // ── Mise à jour en base ──────────────────────────────────────────
@@ -114,7 +114,7 @@ _appeler_microservice_analyse((int)$_SESSION['user_id'], $nomFichier, $mimeReel)
 
 // ── Succès ───────────────────────────────────────────────────────
 setFlash('success', 'Votre CV a été enregistré avec succès ! ✅ L\'analyse IA est en cours, vos informations seront disponibles dans quelques instants.');
-header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+header('Location: /dashboard/dashboard-candidat.php'); exit;
 
 
 // ================================================================

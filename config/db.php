@@ -54,7 +54,7 @@ function requireLogin(string $back = ''): void {
     header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
 
     if (empty($_SESSION['user_id']) || empty($_SESSION['role'])) {
-        $url = '/recrutsmart/auth/login.php';
+        $url = '/auth/login.php';
         if ($back) $url .= '?back='.urlencode($back);
         header('Location: '.$url); exit;
     }
@@ -69,7 +69,7 @@ function createSession(int $id, string $role, string $nom, string $prenom): void
 }
 
 function redirectToDashboard(): void {
-    header('Location: /recrutsmart/actions/set-session.php'); exit;
+    header('Location: /actions/set-session.php'); exit;
 }
 
 function destroySession(): void {

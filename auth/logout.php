@@ -24,7 +24,7 @@ destroySession();
 </div>
 <script>
   sessionStorage.removeItem('rs_session_active');
-  window.location.replace('/recrutsmart/auth/login.php');
+  window.location.replace('/auth/login.php');
 </script>
 </body>
 </html>

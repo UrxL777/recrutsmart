@@ -7,8 +7,8 @@ require_once __DIR__ . '/../config/db.php';
 requireLogin();
 
 $dashboard = ($_SESSION['role'] === 'candidat')
-    ? '/recrutsmart/dashboard/dashboard-candidat.php'
-    : '/recrutsmart/dashboard/dashboard-recruteur.php';
+    ? '/dashboard/dashboard-candidat.php'
+    : '/dashboard/dashboard-recruteur.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">

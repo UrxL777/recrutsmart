@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 requireLogin();
 if ($_SESSION['role'] !== 'candidat') {
-    header('Location: /recrutsmart/dashboard/dashboard-recruteur.php'); exit;
+    header('Location: /dashboard/dashboard-recruteur.php'); exit;
 }
 
 $id       = (int)$_SESSION['user_id'];
@@ -55,7 +55,7 @@ $nonLus = array_filter($messages, fn($m) => !$m['lu']);
 $csrf     = csrfToken();
 $flash    = getFlash();
 $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on' ? 'https' : 'http')
-          . '://' . $_SERVER['HTTP_HOST'] . '/recrutsmart';
+          . '://' . $_SERVER['HTTP_HOST'];
 
 function statutCouleur(string $s): string {
     return match($s) {
@@ -335,7 +335,7 @@ function tempsRelatif(string $date): string {
         </div>
       <?php endif; ?>
 
-      <form method="POST" action="/recrutsmart/actions/upload-cv.php"
+      <form method="POST" action="/actions/upload-cv.php"
         enctype="multipart/form-data" id="form-cv">
         <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
         <div class="upload-zone" id="upload-zone" onclick="document.getElementById('cv-file').click()">
@@ -547,7 +547,7 @@ async function envoyerIA() {
     fd.append('contexte',   '');
     fd.append('csrf_token', '<?= $csrf ?>');
 
-    const res  = await fetch('/recrutsmart/actions/ia-proxy.php', { method: 'POST', body: fd });
+    const res  = await fetch('/actions/ia-proxy.php', { method: 'POST', body: fd });
     const data = await res.json();
 
     if (data.erreur) {
@@ -571,15 +571,15 @@ const SESSION_KEY = 'rs_session_active';
 // À la connexion, le token est posé (voir login.php)
 // Si sessionStorage ne contient pas le token → session expirée ou bouton retour après déco
 if (!sessionStorage.getItem(SESSION_KEY)) {
-  window.location.replace('/recrutsmart/auth/login.php');
+  window.location.replace('/auth/login.php');
 } else {
   // Vérifier côté serveur que la session PHP est toujours active
-  fetch('/recrutsmart/actions/check-session.php', { cache: 'no-store' })
+  fetch('/actions/check-session.php', { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
       if (!data.connecte) {
         sessionStorage.removeItem(SESSION_KEY);
-        window.location.replace('/recrutsmart/auth/login.php');
+        window.location.replace('/auth/login.php');
       }
     });
 }
@@ -587,12 +587,12 @@ if (!sessionStorage.getItem(SESSION_KEY)) {
 // Empêcher le retour arrière après déconnexion
 history.pushState(null, '', window.location.href);
 window.addEventListener('popstate', () => {
-  fetch('/recrutsmart/actions/check-session.php', { cache: 'no-store' })
+  fetch('/actions/check-session.php', { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
       if (!data.connecte) {
         sessionStorage.removeItem(SESSION_KEY);
-        window.location.replace('/recrutsmart/auth/login.php');
+        window.location.replace('/auth/login.php');
       } else {
         history.pushState(null, '', window.location.href);
       }

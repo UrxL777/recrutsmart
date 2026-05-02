@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 requireLogin();
 if ($_SESSION['role'] !== 'recruteur') {
-    header('Location: /recrutsmart/dashboard/dashboard-candidat.php'); exit;
+    header('Location: /dashboard/dashboard-candidat.php'); exit;
 }
 
 $id        = (int)$_SESSION['user_id'];
@@ -58,7 +58,7 @@ $stMsgEnvoyes->execute([$id]); $messagesEnvoyes = $stMsgEnvoyes->fetchAll();
 
 // URL de base pour les CV — fonctionne en local ET en hébergement
 $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on' ? 'https' : 'http')
-          . '://' . $_SERVER['HTTP_HOST'] . '/recrutsmart';
+          . '://' . $_SERVER['HTTP_HOST'];
 
 $csrf  = csrfToken();
 $flash = getFlash();
@@ -391,7 +391,7 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
       <span class="modal-title" id="modal-titre">Contacter le candidat</span>
       <button class="modal-close" onclick="fermerModal()">✕</button>
     </div>
-    <form method="POST" action="/recrutsmart/actions/send-message.php" id="form-contact">
+    <form method="POST" action="/actions/send-message.php" id="form-contact">
       <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
       <input type="hidden" name="candidat_id" id="modal-cand-id">
       <div class="modal-body">
@@ -486,7 +486,7 @@ async function envoyerIA(){
     const fd=new FormData();
     fd.append('action','agent'); fd.append('message',msg);
     fd.append('contexte',contexte); fd.append('csrf_token','<?= $csrf ?>');
-    const res=await fetch('/recrutsmart/actions/ia-proxy.php',{method:'POST',body:fd});
+    const res=await fetch('/actions/ia-proxy.php',{method:'POST',body:fd});
     const data=await res.json();
     clearInterval(interval); document.getElementById('ia-loading')?.remove();
     if(data.erreur) ajouterBot('⚠️ '+escTexte(data.erreur));
@@ -501,16 +501,16 @@ iaInput.addEventListener('keydown',e=>{ if(e.key==='Enter') envoyerIA(); });
 
 // Session sécurisée
 const SESSION_KEY='rs_session_active';
-if(!sessionStorage.getItem(SESSION_KEY)){ window.location.replace('/recrutsmart/auth/login.php'); }
+if(!sessionStorage.getItem(SESSION_KEY)){ window.location.replace('/auth/login.php'); }
 else{
-  fetch('/recrutsmart/actions/check-session.php',{cache:'no-store'}).then(r=>r.json()).then(d=>{
-    if(!d.connecte){ sessionStorage.removeItem(SESSION_KEY); window.location.replace('/recrutsmart/auth/login.php'); }
+  fetch('/actions/check-session.php',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    if(!d.connecte){ sessionStorage.removeItem(SESSION_KEY); window.location.replace('/auth/login.php'); }
   });
 }
 history.pushState(null,'',window.location.href);
 window.addEventListener('popstate',()=>{
-  fetch('/recrutsmart/actions/check-session.php',{cache:'no-store'}).then(r=>r.json()).then(d=>{
-    if(!d.connecte){ sessionStorage.removeItem(SESSION_KEY); window.location.replace('/recrutsmart/auth/login.php'); }
+  fetch('/actions/check-session.php',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    if(!d.connecte){ sessionStorage.removeItem(SESSION_KEY); window.location.replace('/auth/login.php'); }
     else history.pushState(null,'',window.location.href);
   });
 });
@@ -581,7 +581,7 @@ async function lancerRecherche() {
   fd.append('csrf_token', '<?= $csrf ?>');
 
   try {
-    const res = await fetch('/recrutsmart/actions/ia-proxy.php', { method: 'POST', body: fd });
+    const res = await fetch('/actions/ia-proxy.php', { method: 'POST', body: fd });
     const data = await res.json();
     clearInterval(spinnerInterval);
 
@@ -646,7 +646,7 @@ function majStatutIA(etat) {
 
 async function verifierStatutIA() {
   try {
-    const res = await fetch('/recrutsmart/actions/ia-proxy.php?action=sante', { cache: 'no-store' });
+    const res = await fetch('/actions/ia-proxy.php?action=sante', { cache: 'no-store' });
     const data = await res.json();
     majStatutIA(data.statut === 'ok' ? 'actif' : 'hors-ligne');
   } catch {
