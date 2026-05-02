@@ -43,8 +43,8 @@ def _extraire_image(chemin: str) -> str:
     except Exception:
         return ''
 
-def nettoyer_texte(texte: str, limite: int = 8000) -> str:
+def nettoyer_texte(texte: str) -> str:
     if not texte:
         return ''
     lignes = [ligne.strip() for ligne in texte.splitlines() if ligne.strip()]
-    return '\n'.join(lignes)[:limite]
+    return '\n'.join(lignes)
