@@ -114,8 +114,47 @@ RÈGLES ABSOLUES :
 # ─────────────────────────────────────────────────────────────────
 # 1. Validation de la requête
 # ─────────────────────────────────────────────────────────────────
-async def valider_requete(requete: str) -> tuple[bool, str]:
+async def reformuler_requete(requete: str) -> str:
     """
+    Reformule la requête pour clarifier les critères implicites ou négatifs.
+    Ex: "quelqu'un qui n'aime pas l'indiscipline" → "quelqu'un qui aime la discipline"
+    Ex: "ne mange pas de porc" → "pratique une religion qui interdit le porc ou mentionne cette préférence"
+    Retourne la requête reformulée ou la requête originale si pas de reformulation nécessaire.
+    """
+    try:
+        llm = get_llm(temperature=0.0, max_tokens=300)
+    except RuntimeError:
+        return requete
+
+    prompt = f"""Tu es un expert en analyse de requêtes de recrutement.
+Reformule cette requête pour la rendre plus explicite et positive, en conservant TOUS les critères.
+Transforme les formulations négatives en formulations positives équivalentes.
+Développe les implications logiques des critères.
+
+Exemples :
+- "n'aime pas l'indiscipline" → "aime la discipline et la rigueur"
+- "ne mange pas de porc" → "pratique une religion ou a des préférences alimentaires excluant le porc (Islam, Judaïsme, ou végétarien)"
+- "quelqu'un de sérieux" → "quelqu'un de rigoureux, consciencieux et fiable"
+
+Requête originale : "{requete}"
+
+Retourne UNIQUEMENT la requête reformulée, sans explication ni commentaire."""
+
+    try:
+        response = await llm.ainvoke([
+            SystemMessage(content="Tu reformules des requêtes. Réponds uniquement avec la requête reformulée."),
+            HumanMessage(content=prompt)
+        ])
+        reformulee = response.content.strip()
+        # Si la reformulation est trop longue ou vide, garder l'originale
+        if not reformulee or len(reformulee) > 500:
+            return requete
+        return reformulee
+    except Exception:
+        return requete
+
+
+async def valider_requete(requete: str) -> tuple[bool, str]:    """
     Vérifie que la requête contient au moins un critère de recherche.
     Retourne (valide, raison).
     """

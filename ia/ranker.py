@@ -69,20 +69,27 @@ def _score_prefiltrage(requete: str, candidat: dict) -> int:
 
 async def classer_candidats(requete: str, candidats: list) -> dict:
     """
-    1. Pré-filtrage Python sur toutes les colonnes → tri par pertinence
-    2. Évaluation LLM sur le top 25 (équilibre vitesse/qualité)
-    3. Règle 1 : score < 40 → candidat non retourné
-    4. Règle 2 : tri final par score décroissant (jamais un 40 avant un 70)
+    1. Reformulation de la requête pour clarifier les critères
+    2. Pré-filtrage Python sur toutes les colonnes → tri par pertinence
+    3. Évaluation LLM sur tous les candidats
+    4. Règle : score < 25 → candidat non retourné
+    5. Tri final par score décroissant
     """
-    from agent import evaluer_candidat_par_llm, generer_resume_ia
+    from agent import evaluer_candidat_par_llm, generer_resume_ia, reformuler_requete
 
-    print(f"[RANKER] Requête : {requete}")
+    print(f"[RANKER] Requête originale : {requete}")
+
+    # ── Étape 0 : Reformuler la requête pour clarifier les critères ──
+    requete_reformulee = await reformuler_requete(requete)
+    print(f"[RANKER] Requête reformulée : {requete_reformulee}")
+
     print(f"[RANKER] Total candidats : {len(candidats)}")
 
     # ── Pré-filtrage Python ───────────────────────────────────────
+    # On utilise la requête reformulée pour le pré-filtrage
     candidats_tries = sorted(
         candidats,
-        key=lambda c: -_score_prefiltrage(requete, c)
+        key=lambda c: -_score_prefiltrage(requete_reformulee, c)
     )
 
     # Évaluer TOUS les candidats — pas de limite arbitraire
@@ -98,13 +105,12 @@ async def classer_candidats(requete: str, candidats: list) -> dict:
         try:
             print(f"[RANKER] LLM {idx+1}/{len(top_candidats)} — {candidat.get('prenom','')} {candidat.get('nom','')}...", end=' ', flush=True)
 
-            evaluation = await evaluer_candidat_par_llm(requete, candidat)
+            evaluation = await evaluer_candidat_par_llm(requete_reformulee, candidat)
             score      = evaluation.get("score", 0)
 
             # ── Règle 1 : seuil minimum d'affichage ──────────────
             if score >= 25:
-                resume = await generer_resume_ia(requete, candidat, evaluation)
-                resultats.append({
+                resume = await generer_resume_ia(requete, candidat, evaluation)                resultats.append({
                     'candidat_id':          candidat['id'],
                     'nom':                  candidat['nom'],
                     'prenom':               candidat['prenom'],
