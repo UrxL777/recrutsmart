@@ -228,6 +228,8 @@ Cherche dans TOUTES les sections du profil, notamment "Autres informations" et "
 PROFIL CANDIDAT :
 {profil}''')
         ])
+        print(f"[DEBUG] Requête envoyée : {requete[:100]}")
+        print(f"[DEBUG] Profil complet envoyé ({len(profil)} chars) : {profil[:800]}")
         contenu = response.content.strip().replace('```json','').replace('```','').strip()
         data = json.loads(contenu)
         return {
