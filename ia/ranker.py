@@ -105,7 +105,8 @@ async def classer_candidats(requete: str, candidats: list) -> dict:
         try:
             print(f"[RANKER] LLM {idx+1}/{len(top_candidats)} — {candidat.get('prenom','')} {candidat.get('nom','')}...", end=' ', flush=True)
 
-            evaluation = await evaluer_candidat_par_llm(requete_reformulee, candidat)            score      = evaluation.get("score", 0)
+            evaluation = await evaluer_candidat_par_llm(requete_reformulee, candidat)
+            score      = evaluation.get("score", 0)
 
             # ── Règle 1 : seuil minimum d'affichage ──────────────
             if score >= 15:
