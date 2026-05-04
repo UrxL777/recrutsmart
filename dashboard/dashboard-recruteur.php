@@ -74,7 +74,7 @@ $flash = getFlash();
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0f18;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
 
 /* ── HEADER ── */
-.header{background:#161929;border-bottom:1px solid #252a40;padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:.8rem;flex-wrap:wrap; position: fixed; top: 0; left: 0; z-index: 1000;}
+.header{background:#161929;border-bottom:1px solid #252a40;padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:.8rem;flex-wrap:wrap;position:fixed;top:0;left:0;right:0;z-index:1000;width:100%}
 .brand-name{font-size:1.1rem;font-weight:800;color:#fff}
 .brand-name span{color:#00c9a7}
 .header-left{display:flex;flex-direction:column;min-width:0}
@@ -86,10 +86,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0f18;color:#e2e8f
 .btn-deconnexion:hover{background:#ef4444;color:#fff}
 
 /* ── LAYOUT DESKTOP ── */
-.main{display:grid;grid-template-columns:260px 1fr;gap:1rem;padding:1rem 1.2rem;flex:1;min-height:0}
+.main{display:grid;grid-template-columns:320px 1fr;gap:1rem;padding:1rem 1.2rem;flex:1;min-height:0;margin-top:60px}
 
 /* ── SIDEBAR IA ── */
-.sidebar-ia{background:#161929;border:1px solid #252a40;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 100px);position:sticky;top:1rem}
+.sidebar-ia{background:#161929;border:1px solid #252a40;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 80px);position:sticky;top:70px}
 .ia-header{padding:.8rem 1rem;border-bottom:1px solid #252a40;display:flex;align-items:center;gap:.6rem}
 .ia-plus{width:22px;height:22px;background:#00c9a7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#0d0f18;cursor:pointer;flex-shrink:0}
 .ia-title{font-weight:700;font-size:.9rem;color:#e2e8f0}
