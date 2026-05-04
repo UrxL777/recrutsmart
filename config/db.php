@@ -24,16 +24,16 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';");
 
 // ── Connexion PDO ────────────────────────────────────────────────
-// Les identifiants sont lus depuis les variables d'environnement du serveur
-// En local (XAMPP) : DB_USER=root, DB_PASS=''
-// En production (AAPanel) : config/.env.php définit les variables
+// Les identifiants sont lus depuis config/.env.php (non versionné)
+// En local (XAMPP) : root sans mot de passe
+// En production (AAPanel) : config/.env.php définit les constantes
 if (file_exists(__DIR__ . '/.env.php')) {
     require_once __DIR__ . '/.env.php';
 }
-$db_user = getenv('DB_USER') ?: 'root';
-$db_pass = getenv('DB_PASS') ?: '';
-$db_name = getenv('DB_NAME') ?: 'recrutsmart';
-$db_host = getenv('DB_HOST') ?: 'localhost';
+$db_user = defined('DB_USER') ? DB_USER : 'root';
+$db_pass = defined('DB_PASS') ? DB_PASS : '';
+$db_name = defined('DB_NAME') ? DB_NAME : 'recrutsmart';
+$db_host = defined('DB_HOST') ? DB_HOST : 'localhost';
 
 try {
     $pdo = new PDO(
