@@ -5,6 +5,7 @@ ia/*.pyc
 
 # Variables d'environnement — NE JAMAIS envoyer sur GitHub
 ia/.env
+config/.env.php
 
 # Dossier de test — à supprimer avant production
 tests/cvs/

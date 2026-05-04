@@ -5,8 +5,17 @@ cd /www/wwwroot/uriel.cvmatch.space
 git fetch origin main
 git reset --hard origin/main
 
-# Corriger les identifiants DB (XAMPP → AAPanel)
-sed -i "s/'root', '',/'recrutsmart', 'MpeLYtxdXAZNwCLn',/" config/db.php
+# Créer le fichier de variables d'environnement PHP pour AAPanel
+# Ce fichier n'est pas dans le repo — il reste sur le serveur
+if [ ! -f config/.env.php ]; then
+    cat > config/.env.php << 'ENVEOF'
+<?php
+putenv('DB_HOST=localhost');
+putenv('DB_NAME=recrutsmart');
+putenv('DB_USER=recrutsmart');
+putenv('DB_PASS=MpeLYtxdXAZNwCLn');
+ENVEOF
+fi
 
 # Redémarrer le microservice Python
 pkill -f uvicorn
