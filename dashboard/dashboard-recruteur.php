@@ -74,7 +74,7 @@ $flash = getFlash();
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0f18;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
 
 /* ── HEADER ── */
-.header{background:#161929;border-bottom:1px solid #252a40;padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:.8rem;flex-wrap:wrap}
+.header{background:#161929;border-bottom:1px solid #252a40;padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:.8rem;flex-wrap:wrap; position: fixed; top: 0; left: 0; z-index: 1000;}
 .brand-name{font-size:1.1rem;font-weight:800;color:#fff}
 .brand-name span{color:#00c9a7}
 .header-left{display:flex;flex-direction:column;min-width:0}
