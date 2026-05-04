@@ -231,6 +231,7 @@ PROFIL CANDIDAT :
         print(f"[DEBUG] Requête envoyée : {requete[:100]}")
         print(f"[DEBUG] Profil complet envoyé ({len(profil)} chars) : {profil[:800]}")
         contenu = response.content.strip().replace('```json','').replace('```','').strip()
+        print(f"[LLM_RAW] {contenu[:300]}")
         data = json.loads(contenu)
         return {
             "score":                max(0, min(100, int(data.get("score", 0)))),
