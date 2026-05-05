@@ -86,10 +86,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0f18;color:#e2e8f
 .btn-deconnexion:hover{background:#ef4444;color:#fff}
 
 /* ── LAYOUT DESKTOP ── */
-.main{display:grid;grid-template-columns:320px 1fr;gap:1rem;padding:1rem 1.2rem;flex:1;min-height:0;margin-top:60px}
+.main{display:flex;gap:1rem;padding:1rem 1.2rem;flex:1;min-height:0;margin-top:60px}
 
 /* ── SIDEBAR IA ── */
-.sidebar-ia{background:#161929;border:1px solid #252a40;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 80px);position:fixed;top:70px;width:320px;z-index:100}
+.sidebar-ia{background:#161929;border:1px solid #252a40;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 80px);position:sticky;top:70px;width:320px;flex-shrink:0}
 .ia-header{padding:.8rem 1rem;border-bottom:1px solid #252a40;display:flex;align-items:center;gap:.6rem}
 .ia-plus{width:22px;height:22px;background:#00c9a7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#0d0f18;cursor:pointer;flex-shrink:0}
 .ia-title{font-weight:700;font-size:.9rem;color:#e2e8f0}
@@ -105,7 +105,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0f18;color:#e2e8f
 .ia-send:hover{opacity:.85}
 
 /* ── COLONNE DROITE ── */
-.right-col{display:flex;flex-direction:column;gap:1rem;overflow-y:auto;min-width:0;margin-left:336px}
+.right-col{display:flex;flex-direction:column;gap:1rem;overflow-y:auto;flex:1;min-width:0}
 
 /* Barre de recherche */
 .search-wrap{display:flex;flex-direction:column;gap:.4rem}
