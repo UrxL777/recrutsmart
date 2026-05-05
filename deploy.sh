@@ -5,17 +5,23 @@ cd /www/wwwroot/uriel.cvmatch.space
 git fetch origin main
 git reset --hard origin/main
 
-# Créer le fichier de variables d'environnement PHP pour AAPanel
-# Ce fichier n'est pas dans le repo — il reste sur le serveur
+# Corriger les identifiants DB (XAMPP → AAPanel)
+sed -i "s/'root', '',/'recrutsmart', 'MpeLYtxdXAZNwCLn',/" config/db.php
+
+# Créer le fichier .env.php si absent (identifiants DB pour PHP)
 if [ ! -f config/.env.php ]; then
-    cat > config/.env.php << 'ENVEOF'
-<?php
-putenv('DB_HOST=localhost');
-putenv('DB_NAME=recrutsmart');
-putenv('DB_USER=recrutsmart');
-putenv('DB_PASS=MpeLYtxdXAZNwCLn');
-ENVEOF
+    python3 -c "
+with open('config/.env.php', 'w') as f:
+    f.write('<?php\n')
+    f.write(\"define('DB_HOST', 'localhost');\n\")
+    f.write(\"define('DB_NAME', 'recrutsmart');\n\")
+    f.write(\"define('DB_USER', 'recrutsmart');\n\")
+    f.write(\"define('DB_PASS', 'MpeLYtxdXAZNwCLn');\n\")
+"
 fi
+
+# Forcer le bon modèle IA sur AAPanel (remplace n'importe quel modèle)
+sed -i 's|API_MODEL=.*|API_MODEL=openai/gpt-4o-mini|' ia/.env
 
 # Redémarrer le microservice Python
 pkill -f uvicorn
