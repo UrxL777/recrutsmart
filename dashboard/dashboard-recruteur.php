@@ -168,16 +168,43 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
 .btn-envoyer{background:linear-gradient(135deg,#00c9a7,#0ea5e9);border:none;border-radius:8px;padding:.55rem 1.2rem;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer}
 
 /* ── RESPONSIVE TABLETTE ── */
+@media(max-width:1024px){
+  .main{gap:.8rem;padding:.9rem 1rem}
+  .sidebar-ia{width:260px}
+}
+
 @media(max-width:900px){
-  .main{grid-template-columns:220px 1fr;gap:.8rem;padding:.8rem}
+  .main{flex-direction:column;padding:.8rem}
+  .sidebar-ia{width:100%;height:auto;min-height:280px;max-height:320px;position:static;order:2}
+  .ia-messages{max-height:180px}
+  .right-col{order:1}
 }
 
 /* ── RESPONSIVE MOBILE ── */
 @media(max-width:768px){
-  .main{grid-template-columns:1fr;padding:.8rem;gap:.8rem}
-  .sidebar-ia{height:auto;min-height:280px;max-height:340px;position:static;order:2}
-  .ia-messages{max-height:180px}
-  .right-col{order:1}
+  .main{flex-direction:column;padding:.8rem;gap:.8rem}
+  /* Colonne droite (recherche + résultats) en premier sur mobile */
+  .right-col{order:1;width:100%}
+  /* Sidebar IA en bas, compacte et collapsible */
+  .sidebar-ia{
+    order:2;width:100%;position:static;
+    height:auto;min-height:0;max-height:52px;
+    overflow:hidden;transition:max-height .3s ease;
+    border-radius:10px;
+  }
+  .sidebar-ia.ouverte{max-height:380px}
+  .ia-messages{max-height:200px}
+  /* Bouton toggle IA visible sur mobile */
+  .ia-toggle-mobile{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.75rem 1rem;cursor:pointer;user-select:none;
+  }
+  .ia-toggle-mobile .ia-chevron{
+    font-size:.8rem;color:#7a859a;transition:transform .3s;
+  }
+  .sidebar-ia.ouverte .ia-chevron{transform:rotate(180deg)}
+  /* Masquer le header IA original sur mobile (remplacé par toggle) */
+  .ia-header{display:none}
   .stats-row{grid-template-columns:repeat(3,1fr);gap:.5rem}
   .stat-num{font-size:1.2rem}
   .stat-label{font-size:.68rem}
@@ -187,6 +214,7 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
   .rdv-row{grid-template-columns:1fr}
   .header{padding:.7rem 1rem}
   .welcome-title{font-size:.92rem}
+  .search-bar{font-size:.88rem}
 }
 
 @media(max-width:480px){
@@ -195,18 +223,19 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
   .search-bar{font-size:.85rem;padding:.65rem .8rem}
   .cand-name{font-size:.85rem}
   .modal{border-radius:10px}
-  .sidebar-ia{min-height:240px;max-height:300px}
-  .ia-messages{max-height:150px}
   .ia-input{font-size:.78rem}
   .search-hint{font-size:.72rem}
+  .welcome-title{font-size:.85rem}
+  .brand-name{font-size:.95rem}
 }
 
 @media(max-width:360px){
   .stats-row{grid-template-columns:1fr}
   .main{padding:.5rem}
   .header{padding:.6rem .8rem}
-  .welcome-title{font-size:.85rem}
-  .brand-name{font-size:.95rem}
+  .welcome-title{font-size:.8rem}
+  .brand-name{font-size:.88rem}
+  .btn-deconnexion{font-size:.75rem;padding:.35rem .65rem}
 }
 </style>
 </head>
@@ -240,7 +269,15 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
 <?php endif; ?>
 
   <!-- SIDEBAR IA -->
-  <div class="sidebar-ia">
+  <div class="sidebar-ia" id="sidebar-ia">
+    <!-- Toggle mobile (visible uniquement sur mobile) -->
+    <div class="ia-toggle-mobile" onclick="toggleSidebarIA()" id="ia-toggle">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="width:22px;height:22px;background:#00c9a7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#0d0f18">🤖</div>
+        <span style="font-weight:700;font-size:.88rem;color:#e2e8f0">RecrutSmart IA</span>
+      </div>
+      <span class="ia-chevron">▼</span>
+    </div>
     <div class="ia-header">
       <div class="ia-plus" onclick="nouvelleConv()" title="Nouvelle conversation">+</div>
       <span class="ia-title">RecrutSmart IA</span>
@@ -499,7 +536,23 @@ async function envoyerIA(){
 iaSend.addEventListener('click',envoyerIA);
 iaInput.addEventListener('keydown',e=>{ if(e.key==='Enter') envoyerIA(); });
 
-// Session sécurisée
+// Toggle sidebar IA sur mobile
+function toggleSidebarIA() {
+  const sidebar = document.getElementById('sidebar-ia');
+  sidebar.classList.toggle('ouverte');
+}
+// Masquer le bouton toggle sur desktop
+function ajusterToggle() {
+  const toggle = document.getElementById('ia-toggle');
+  if (!toggle) return;
+  toggle.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+  // Sur desktop, s'assurer que la sidebar est toujours visible
+  if (window.innerWidth > 768) {
+    document.getElementById('sidebar-ia')?.classList.remove('ouverte');
+  }
+}
+window.addEventListener('resize', ajusterToggle);
+ajusterToggle();
 const SESSION_KEY='rs_session_active';
 if(!sessionStorage.getItem(SESSION_KEY)){ window.location.replace('/auth/login.php'); }
 else{

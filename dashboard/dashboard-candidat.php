@@ -86,7 +86,8 @@ function tempsRelatif(string $date): string {
 
   /* ── HEADER ── */
   .header{background:#161929;border-bottom:1px solid #252a40;
-    padding:.9rem 1.8rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    padding:.9rem 1.8rem;display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;position:fixed;top:0;left:0;right:0;z-index:1000;width:100%}
   .brand{display:flex;align-items:center;gap:.6rem}
   .brand-logo{width:36px;height:36px;background:linear-gradient(135deg,#00c9a7,#0ea5e9);
     border-radius:9px;display:flex;align-items:center;justify-content:center;
@@ -103,7 +104,7 @@ function tempsRelatif(string $date): string {
 
   /* ── LAYOUT PRINCIPAL ── */
   .main{display:grid;grid-template-columns:260px 1fr 300px;gap:1.2rem;
-    padding:1.4rem 1.8rem;flex:1;min-height:0}
+    padding:1.4rem 1.8rem;flex:1;min-height:0;margin-top:64px}
 
   /* ── SIDEBAR AGENT IA ── */
   .sidebar-ia{background:#161929;border:1px solid #252a40;border-radius:14px;
@@ -209,32 +210,46 @@ function tempsRelatif(string $date): string {
     font-weight:600;margin-top:1rem}
 
   /* ── RESPONSIVE TABLETTE ── */
+  @media(max-width:1024px){
+    .main{grid-template-columns:220px 1fr 260px;gap:.9rem;padding:1rem 1rem}
+  }
+
   @media(max-width:900px){
-    .main{grid-template-columns:1fr;grid-template-rows:auto}
-    .sidebar-ia{height:auto;min-height:300px;position:static}
+    .main{grid-template-columns:1fr;grid-template-rows:auto;padding:.9rem}
+    .sidebar-ia{height:auto;min-height:300px;position:static;order:3}
     .ia-messages{max-height:200px}
+    .center-col{order:1}
+    .right-col{order:2}
   }
 
   /* ── RESPONSIVE MOBILE ── */
   @media(max-width:680px){
-    .main{grid-template-columns:1fr;padding:.7rem;gap:.8rem}
-    .sidebar-ia{height:auto;min-height:280px;position:static;order:3}
-    .ia-messages{max-height:170px}
+    .main{grid-template-columns:1fr;padding:.7rem;gap:.8rem;margin-top:56px}
+    .sidebar-ia{height:auto;min-height:260px;position:static;order:3}
+    .ia-messages{max-height:160px}
     .center-col{order:1}
     .right-col{order:2}
-    .header{padding:.65rem .9rem;flex-wrap:wrap;gap:.5rem}
-    .welcome-text{font-size:.85rem}
-    .section-card{padding:1rem}
+    .header{padding:.65rem 1rem}
+    .brand-name{font-size:.95rem}
+    .welcome-text{display:none}
+    .section-card{padding:.9rem}
     .upload-zone{padding:1.5rem .8rem}
     .upload-icon{font-size:2rem}
     .cand-item{flex-direction:column;gap:.3rem;align-items:flex-start}
     .msg-item{padding:.6rem .4rem}
+    .modal{border-radius:10px}
+    .modal-body{padding:1rem}
   }
 
   @media(max-width:400px){
-    .main{padding:.5rem}
+    .main{padding:.5rem;gap:.6rem;margin-top:52px}
+    .header{padding:.55rem .8rem}
+    .brand-logo{width:30px;height:30px;font-size:.85rem}
+    .brand-name{font-size:.88rem}
+    .btn-deconnexion{font-size:.75rem;padding:.35rem .7rem}
     .btn-cv{font-size:.88rem;padding:.65rem}
     .ia-input{font-size:.78rem}
+    .section-title{font-size:.95rem}
   }
 </style>
 </head>
