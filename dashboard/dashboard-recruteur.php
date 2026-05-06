@@ -320,11 +320,11 @@ textarea.modal-input{resize:vertical;min-height:110px;line-height:1.6}
     <!-- Barre de recherche IA -->
     <div class="search-wrap">
       <div class="search-hint">
-        💡 Tapez un métier précis — Ex : <strong>Développeur fullstack</strong>, <strong>Comptable 3 ans Abidjan</strong>, <strong>Mécanicien automobile</strong>
+        💡 Décrivez le profil que vous recherchez en langage naturel — Ex : <strong>Comptable avec 3 ans d'expérience à Abidjan</strong>, <strong>Quelqu'un qui a fréquenté le lycée jeune fille de Yopougon</strong>, <strong>Praticien en sciences occultes</strong>
       </div>
       <div class="search-bar-wrap">
         <input type="text" class="search-bar" id="search-input"
-          placeholder="Ex : Développeur fullstack, Mécanicien, Comptable 2 ans..."
+          placeholder="Ex : Développeur PHP sérieux, Candidat parlant anglais et français, Comptable 3 ans Abidjan..."
           value="<?= clean($dernRequete) ?>">
         <button class="btn-search" id="btn-search" title="Lancer la recherche">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
