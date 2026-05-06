@@ -22,7 +22,7 @@ from database import (
 )
 from extractor     import extraire_texte, nettoyer_texte
 from ranker        import classer_candidats
-from agent         import repondre_agent, valider_requete
+from agent         import repondre_agent
 from analyser_cvs  import analyser_cv_unique
 
 load_dotenv()
@@ -187,16 +187,6 @@ async def analyser_candidats(
     Python pré-filtre → LLM évalue le top → résultats triés par score.
     Timeout effectif : géré côté PHP (300s dans ia-proxy.php).
     """
-    # Validation de la requête
-    valide, raison = await valider_requete(body.requete)
-    if not valide:
-        return {
-            'exacts': [], 'partiels': [], 'similaires': [],
-            'total': 0,
-            'message': f'Requête non reconnue : {raison}',
-            'composantes': {}
-        }
-
     # Récupérer tous les candidats avec leurs données complètes
     candidats = await get_tous_candidats()
     if not candidats:

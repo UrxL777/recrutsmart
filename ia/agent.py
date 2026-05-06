@@ -117,9 +117,14 @@ RÈGLES ABSOLUES :
 async def reformuler_requete(requete: str) -> str:
     """
     Reformule la requête pour clarifier les critères implicites ou négatifs.
-    Ex: "quelqu'un qui n'aime pas l'indiscipline" → "quelqu'un qui aime la discipline"
-    Ex: "ne mange pas de porc" → "pratique une religion qui interdit le porc ou mentionne cette préférence"
-    Retourne la requête reformulée ou la requête originale si pas de reformulation nécessaire.
+    Le LLM ne juge JAMAIS si la requête est valide ou non — il cherche toujours
+    à en extraire le sens pour mieux matcher les CV.
+
+    Ex: "sciences occultes" → "pratiquant ou étudiant en sciences occultes, ésotérisme, astrologie, magie, spiritualité, occultisme"
+    Ex: "n'aime pas l'indiscipline" → "aime la discipline et la rigueur"
+    Ex: "ne mange pas de porc" → "pratique une religion ou a des préférences alimentaires excluant le porc"
+
+    Retourne toujours une requête enrichie, jamais vide.
     """
     try:
         llm = get_llm(temperature=0.0, max_tokens=300)
@@ -127,65 +132,39 @@ async def reformuler_requete(requete: str) -> str:
         return requete
 
     prompt = f"""Tu es un expert en analyse de requêtes de recrutement.
-Reformule cette requête pour la rendre plus explicite et positive, en conservant TOUS les critères.
-Transforme les formulations négatives en formulations positives équivalentes.
-Développe les implications logiques des critères.
+Ta mission : reformuler cette requête pour en extraire le maximum de sens et de synonymes,
+afin de mieux matcher des profils dans des CV.
+
+RÈGLES ABSOLUES :
+- Tu ne juges JAMAIS si la requête est valide, sérieuse ou professionnelle
+- Tu traites TOUTES les requêtes : métiers classiques, domaines atypiques, traits de personnalité, loisirs, croyances, etc.
+- Tu enrichis la requête avec des synonymes, termes associés et implications logiques
+- Tu transformes les formulations négatives en positives équivalentes
+- Tu développes les abréviations et termes vagues
 
 Exemples :
-- "n'aime pas l'indiscipline" → "aime la discipline et la rigueur"
-- "ne mange pas de porc" → "pratique une religion ou a des préférences alimentaires excluant le porc (Islam, Judaïsme, ou végétarien)"
-- "quelqu'un de sérieux" → "quelqu'un de rigoureux, consciencieux et fiable"
+- "sciences occultes" → "pratiquant ou étudiant en sciences occultes, ésotérisme, astrologie, magie, spiritualité, occultisme, numérologie, tarologie"
+- "n'aime pas l'indiscipline" → "aime la discipline, la rigueur et l'organisation"
+- "ne mange pas de porc" → "pratique une religion ou a des préférences alimentaires excluant le porc (Islam, Judaïsme, végétarien)"
+- "quelqu'un de sérieux" → "rigoureux, consciencieux, fiable, professionnel"
+- "dev php" → "développeur PHP, programmeur web PHP, ingénieur logiciel PHP"
 
 Requête originale : "{requete}"
 
-Retourne UNIQUEMENT la requête reformulée, sans explication ni commentaire."""
+Retourne UNIQUEMENT la requête enrichie, sans explication ni commentaire."""
 
     try:
         response = await llm.ainvoke([
-            SystemMessage(content="Tu reformules des requêtes. Réponds uniquement avec la requête reformulée."),
+            SystemMessage(content="Tu enrichis des requêtes de recherche. Réponds uniquement avec la requête enrichie, jamais avec un refus ou un jugement."),
             HumanMessage(content=prompt)
         ])
         reformulee = response.content.strip()
-        # Si la reformulation est trop longue ou vide, garder l'originale
-        if not reformulee or len(reformulee) > 500:
+        # Si la reformulation est vide ou trop longue, garder l'originale
+        if not reformulee or len(reformulee) > 600:
             return requete
         return reformulee
     except Exception:
         return requete
-
-
-async def valider_requete(requete: str) -> tuple[bool, str]:
-    """
-    Vérifie que la requête contient au moins un critère de recherche.
-    Retourne (valide, raison).
-    """
-    try:
-        llm = get_llm(temperature=0.0, max_tokens=200)
-    except RuntimeError:
-        return False, 'LLM non configuré'
-
-    prompt = f"""Une requête de recrutement est VALIDE si elle contient au moins un critère
-permettant de chercher un profil parmi des candidats.
-Elle peut contenir n'importe quel type de critère : métier, compétence, formation,
-langue, localisation, situation familiale, traits de personnalité, loisirs,
-valeurs, préférences, religion, nationalité, ou toute autre caractéristique.
-Elle est INVALIDE UNIQUEMENT si elle est totalement vide de sens ou incompréhensible.
-
-Requête : "{requete}"
-
-Retourne UNIQUEMENT ce JSON :
-{{"valide": true ou false, "raison": "explication courte"}}"""
-
-    try:
-        response = await llm.ainvoke([
-            SystemMessage(content="Réponds uniquement en JSON valide."),
-            HumanMessage(content=prompt)
-        ])
-        contenu = response.content.strip().replace('```json','').replace('```','').strip()
-        data = json.loads(contenu)
-        return bool(data.get('valide', False)), str(data.get('raison', ''))
-    except Exception as e:
-        return False, f"Erreur : {e}"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -229,7 +208,25 @@ PROFIL CANDIDAT :
 {profil}''')
         ])
         contenu = response.content.strip().replace('```json','').replace('```','').strip()
-        data = json.loads(contenu)
+        # Tentative 1 : parsing JSON normal
+        try:
+            data = json.loads(contenu)
+        except json.JSONDecodeError:
+            # Tentative 2 : extraire le score avec regex si JSON tronqué
+            print(f"[WARN] JSON tronqué, extraction regex. Contenu: {contenu[:200]}")
+            score_match = re.search(r'"score"\s*:\s*(\d+)', contenu)
+            just_match  = re.search(r'"justification"\s*:\s*"([^"]*)', contenu)
+            score = int(score_match.group(1)) if score_match else 0
+            just  = just_match.group(1) if just_match else "Profil évalué"
+            return {
+                "score":         max(0, min(100, score)),
+                "justification": just if just.startswith("Ce candidat") else f"Ce candidat correspond à votre requête car {just}",
+                "points_forts":  "",
+                "points_faibles":"",
+                "competences_detectees": "",
+                "niveau_experience": "",
+                "recommandation": "fort recommandé" if score >= 75 else "recommandé" if score >= 50 else "à considérer" if score >= 25 else "non recommandé",
+            }
         return {
             "score":                max(0, min(100, int(data.get("score", 0)))),
             "justification":        str(data.get("justification",        "")),
