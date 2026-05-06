@@ -330,7 +330,7 @@ function tempsRelatif(string $date): string {
 
       <!-- Conseil mise à jour CV -->
       <div style="background:rgba(0,201,167,.06);border:1px solid rgba(0,201,167,.25);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.83rem;line-height:1.7;color:#94a3b8">
-        💡 Pensez à mettre votre CV à jour dès que vous acquérez de nouvelles compétences, une nouvelle expérience ou un nouveau diplôme — cela augmente vos chances d'être contacté par les recruteurs.
+        💡 Pensez à mettre votre CV à jour dès que vous acquérez de nouvelles compétences, une nouvelle expérience ou un nouveau diplôme — les CV les plus récents sont mis en avant par notre agent lors des recherches des recruteurs.
       </div>
 
       <?php if ($candidat['cv_fichier']): ?>
