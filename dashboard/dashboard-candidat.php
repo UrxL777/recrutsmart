@@ -328,10 +328,9 @@ function tempsRelatif(string $date): string {
     <div class="section-card">
       <div class="section-title">Mon CV</div>
 
-      <!-- Format CV recommandé -->
-      <div style="background:rgba(0,201,167,.06);border:1px solid rgba(0,201,167,.25);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.8rem;line-height:1.7;color:#94a3b8">
-        <div style="color:#00c9a7;font-weight:700;margin-bottom:.4rem">📋 Format de CV recommandé</div>
-        Remplissez votre CV avec ces rubriques obligatoires : <strong style="color:#e2e8f0">Compétences/Qualités</strong> (ex: rigoureux, PHP, anglais), <strong style="color:#e2e8f0">Formation/Diplôme</strong> (ex: Master en Logistique), <strong style="color:#e2e8f0">Langue</strong> (arabe, mandarin…), <strong style="color:#e2e8f0">Expérience</strong> (nombre d'années), et <strong style="color:#e2e8f0">Localisation</strong> (ville ou quartier).
+      <!-- Conseil mise à jour CV -->
+      <div style="background:rgba(0,201,167,.06);border:1px solid rgba(0,201,167,.25);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.83rem;line-height:1.7;color:#94a3b8">
+        💡 Pensez à mettre votre CV à jour dès que vous acquérez de nouvelles compétences, une nouvelle expérience ou un nouveau diplôme — cela augmente vos chances d'être contacté par les recruteurs.
       </div>
 
       <?php if ($candidat['cv_fichier']): ?>
